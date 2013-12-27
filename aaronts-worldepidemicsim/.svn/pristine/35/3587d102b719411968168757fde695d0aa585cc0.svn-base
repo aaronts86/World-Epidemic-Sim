@@ -1,0 +1,96 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.AbstractEntity;
+import epidemic.progpracticum.model.Bird;
+import epidemic.progpracticum.model.Human;
+import epidemic.progpracticum.model.SimParams;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Ellipse2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JPanel;
+
+public class WorldPanel extends JPanel {
+    private final Color my_healthy_human = Color.GREEN;
+    private final Color my_infected_human = Color.RED;
+    private final Color my_healthy_bird = Color.GRAY;
+    private final Color my_infected_bird = Color.ORANGE;
+    
+    private List<AbstractEntity> myEntityList = new ArrayList<>();
+    private int myDays;
+    
+    private NorthPanel myNorthPanel;
+    private EastPanel myEastPanel;
+    
+    public WorldPanel(final NorthPanel aNorthPanel, final EastPanel anEastPanel) {
+        super();
+        setPreferredSize(new Dimension(SimParams.PANEL_PIX_WIDTH, SimParams.PANEL_PIX_HEIGHT));
+        setBackground(Color.WHITE);
+        
+        myNorthPanel = aNorthPanel;
+        myEastPanel = anEastPanel;
+    }
+    
+    @Override
+    public void paintComponent(final Graphics aGraphics) {
+        super.paintComponent(aGraphics);
+        final Graphics2D g2d = (Graphics2D) aGraphics;
+     
+        for (AbstractEntity entity: myEntityList) {
+            if (entity instanceof Human) {
+                if (entity.isSick()) {
+                    g2d.setPaint(my_infected_human);
+                } else if (!entity.isSick()) {
+                    g2d.setPaint(my_healthy_human);
+                }
+                g2d.fill(new Ellipse2D.Double(entity.getMyLocation().getX(),
+                                              entity.getMyLocation().getY(),
+                                              SimParams.HUMAN_DIM, SimParams.HUMAN_DIM));
+            } else if (entity instanceof Bird) {
+                if (entity.isSick()) {
+                    g2d.setPaint(my_infected_bird);
+                } else if (!entity.isSick()) {
+                    g2d.setPaint(my_healthy_bird);
+                }
+                g2d.fill(new Ellipse2D.Double(entity.getMyLocation().getX(),
+                                              entity.getMyLocation().getY(),
+                                              SimParams.BIRD_DIM, SimParams.BIRD_DIM));
+            }
+        }
+          
+    }
+    
+    public void setMyEntityList(List<AbstractEntity> myEntityList) {
+        this.myEntityList = myEntityList;
+    }
+
+    public List<AbstractEntity> getMyEntityList() {
+        return myEntityList;
+    }
+    
+    public int getMyDays() {
+        return myDays;
+    }
+
+    public void setMyDays(int aDays) {
+        this.myDays = aDays;
+    }
+
+    public void advanceDay() {
+        myDays++;
+    }
+    
+    public void resetWorld() {
+        myEntityList.clear();
+        myDays = 0;
+        repaint();
+    }
+}

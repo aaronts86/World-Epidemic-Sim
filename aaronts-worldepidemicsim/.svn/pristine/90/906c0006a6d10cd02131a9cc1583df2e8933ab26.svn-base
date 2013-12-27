@@ -1,0 +1,178 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.model;
+
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.Timer;
+
+import epidemic.progpracticum.view.EastPanel;
+import epidemic.progpracticum.view.SouthPanel;
+import epidemic.progpracticum.view.WorldPanel;
+
+/**
+ * @author Bolo
+ *
+ */
+public class SimWorld {
+    private int myHealthyHumans;
+    private int myInfectedHumans;
+    private int myHealthyBirds;
+    private int myInfectedBirds;
+    
+    private List<AbstractEntity> myEntityList;
+    private Timer myTimer;
+    
+    private WorldPanel myWorldPanel;
+    private SouthPanel mySouthPanel;
+    private EastPanel myEastPanel;
+    
+    public SimWorld(final int aHumans, final int aBirds,
+                    final double anInitialInfectedBirds, final WorldPanel aWorldPanel,
+                    final SouthPanel aSouthPanel, final EastPanel anEastPanel,
+                    final Timer aTimer) {
+        myHealthyHumans = aHumans;
+        myInfectedBirds = (int) Math.round(anInitialInfectedBirds * aBirds);
+        myHealthyBirds = aBirds - myInfectedBirds;
+
+        myEntityList = new ArrayList<>();
+        myTimer = aTimer;
+        
+        myWorldPanel = aWorldPanel;
+        mySouthPanel = aSouthPanel;
+        myEastPanel = anEastPanel;
+        
+        initializeWorld();
+    }
+    
+    public void initializeWorld() {
+        myWorldPanel.setMyDays(0);
+        Point startPoint;
+        boolean newPoint;
+        
+        for (int i = 0; i < myTimer.getActionListeners().length; i++) {
+            myTimer.removeActionListener(myTimer.getActionListeners()[i]);
+        }
+        myTimer.addActionListener(new EntityMoveListener());
+        
+        if (myTimer.isRunning()) {
+            myTimer.stop();
+        }
+        
+        for (int i = 0; i < myHealthyHumans; i++) {
+            do {       
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH) + 5)
+                        / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + 5) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Human('H', false, 0, startPoint));
+        }
+        
+        for (int i = 0; i < myHealthyBirds; i++) {
+            do {                
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH) + 5)
+                        / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + 5) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Bird('B', false, 0, startPoint));
+        }
+        
+        for (int i = 0; i < myInfectedBirds; i++) {
+            do {                
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH) + 5)
+                        / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + 5) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Bird('B', true, 1, startPoint));
+        }
+        myWorldPanel.setMyEntityList(myEntityList);
+        myWorldPanel.repaint();
+        myEastPanel.updateStatistics();
+    }
+    
+    private class EntityMoveListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent anEvent) {
+            boolean allInfected = true;
+            final List<AbstractEntity> updatedEntityList = new ArrayList<>();
+            myWorldPanel.advanceDay();
+            for (AbstractEntity entity: myEntityList) {
+                entity.move();
+                if (!entity.isSick()) {
+                    allInfected = false;
+                }
+                if (entity.isSick()) {
+                    entity.setMyDaysSick(entity.getMyDaysSick() + 1);
+                    for (AbstractEntity otherEntity: myEntityList) {
+                        if (entity.equals(otherEntity) && !otherEntity.isSick()) {
+                            final double infected = SimParams.GENERATOR.nextDouble();
+                            if (infected >= SimParams.CHANCE_OF_INFECTION) {
+                                otherEntity.setMyIsSick(true);
+                            }
+                        }
+                    }
+                }
+                updatedEntityList.add(entity);
+            }
+            
+            if (allInfected) {
+                myTimer.stop();
+                JOptionPane.showMessageDialog(null, "Everyone has been infected!",
+                                              "Simulation over", JOptionPane.WARNING_MESSAGE,
+                                              null);
+                myTimer.removeActionListener(this);
+            }
+            
+            myEntityList.clear();
+            myEntityList.addAll(updatedEntityList);
+            myWorldPanel.setMyEntityList(myEntityList);
+            myWorldPanel.repaint();
+            myEastPanel.updateStatistics();
+        }
+    }
+}

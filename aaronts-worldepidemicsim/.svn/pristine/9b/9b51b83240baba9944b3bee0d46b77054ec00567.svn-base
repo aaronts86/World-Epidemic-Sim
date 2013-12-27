@@ -1,0 +1,285 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.SimParams;
+import epidemic.progpracticum.model.SimWorld;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+/**
+ * The <code>NorthPanel</code> class is apart of the SimulationFrame and contains sliders
+ * to select the population and a button to generate the world.
+ * 
+ * @author Aaron Schraufnagel
+ * @version Autumn 2013
+ * 
+ * @see epidemic.progpracticum.model.SimParams
+ * @see epidemic.progpracticum.model.SimWorld
+ * @see java.awt.Dimension
+ * @see java.awt.ActionEvent
+ * @see java.awt.ActionListener
+ * @see javax.swing.BoxLayout
+ * @see javax.swing.JButton
+ * @see javax.swing.JLabel
+ * @see javax.swing.JPanel
+ * @see javax.swing.JSlider
+ * @see javax.swing.Timer
+ * @see javax.swing.event.ChangeEvent
+ * @see javax.swing.event.ChangeListener
+ * 
+ * @cust.inv None
+ */
+@SuppressWarnings("serial")
+public class NorthPanel extends JPanel {
+    /**
+     * Represents the panel's width.
+     */
+    private final int my_width = 1150;
+    /**
+     * Represents the panel's height.
+     */
+    private final int my_height = 80;
+    /**
+     * Represents the major tick spacing for the JSlider.
+     */
+    private final int my_major_spacing = 100;
+    /**
+     * Represents the minimum for the JSlider.
+     */
+    private final int my_slider_min = 0;
+    /**
+     * Represents the percentage symbol.
+     */
+    private final String my_percent = "%";
+    /**
+     * Represents a label that directs the user to select the number of humans.
+     */
+    private JLabel myHumanLabel;
+    /**
+     * Represents a label that dynamically holds the number of humans selected.
+     */
+    private JLabel myHumanNumberLabel;
+    /**
+     * Represents a label that directs the user to select the number of birds.
+     */
+    private JLabel myBirdLabel;
+    /**
+     * Represents a label that dynamically holds the number of birdss selected.
+     */
+    private JLabel myBirdNumberLabel;
+    /**
+     * Represents a label that directs the user to select the percentage of infected birds.
+     */
+    private JLabel myInfectedBirdLabel;
+    /**
+     * Represents a label that dynamically holds the percentage of infected birds selected.
+     */
+    private JLabel myInfectedBirdNumberLabel;
+    /**
+     * Represents a slider that allows the user to select the number of humans.
+     */
+    private JSlider myHumanSlider;
+    /**
+     * Represents a slider that allows the user to select the number of birds.
+     */
+    private JSlider myBirdSlider;
+    /**
+     * Represents a slider that allows the user to select the percentage of infected birds.
+     */
+    private JSlider myInfectedBirdSlider;
+    /**
+     * Represents a button to generate the world.
+     */
+    private JButton myGenerateButton;
+    /**
+     * Represents a listener for each JSlider to dynamically change labels.
+     */
+    private SliderListener mySliderListener;
+    /**
+     * Represents a world panel containing the graphical representation of SimWorld.
+     */
+    private WorldPanel myWorldPanel;
+    /**
+     * Represents an east panel that holds statistics.
+     */
+    private EastPanel myEastPanel;
+    /**
+     * Represents a south panel thatconstructs the buttons and displays the components.
+     */
+    private SouthPanel mySouthPanel;
+    /**
+     * Timer object that controls the SimWorld's start and stop intervals.
+     */
+    private Timer myTimer;
+    
+    /**
+     * The parameterized constructor for the North Panel that displays its components
+     * in the simulation frame.
+     * 
+     * @param aWorldPanel epresents a world panel containing the graphical representation 
+     *        of SimWorld
+     * @param anEastPanel represents an east panel that holds statistics
+     * @param aSouthPanel constructs the buttons and displays the components
+     * @param aTimer timer object that controls the SimWorld's start and stop intervals
+     * @custom.post the northpanel is constructed and displayed
+     */
+    public NorthPanel(final WorldPanel aWorldPanel, final EastPanel anEastPanel,
+                      final SouthPanel aSouthPanel, final Timer aTimer) {
+        super();
+        setPreferredSize(new Dimension(my_width, my_height));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        
+        myWorldPanel = aWorldPanel;
+        myEastPanel = anEastPanel;
+        mySouthPanel = aSouthPanel;
+        myTimer = aTimer;
+        mySliderListener = new SliderListener();
+
+        buildLeftPanel();
+        buildCenterPanel();
+        buildRightPanel();
+    }
+    
+    /**
+     * The left panel of the north panel is filled with its components and added.
+     * 
+     * @custom.post the left panel is displayed
+     */
+    private void buildLeftPanel() {
+        myHumanLabel = new JLabel("Select number of people:");
+        myHumanNumberLabel = new JLabel("" + my_slider_min);
+        
+        myHumanSlider = new JSlider(my_slider_min, SimParams.MAX_HUMAN_NUM, my_slider_min);
+        myHumanSlider.setMajorTickSpacing(my_major_spacing);
+        myHumanSlider.setMinorTickSpacing(50);
+        myHumanSlider.setPaintTicks(true);
+        myHumanSlider.setPaintLabels(true);
+        myHumanSlider.addChangeListener(mySliderListener);
+        
+        final JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.add(myHumanLabel);
+        leftPanel.add(myHumanNumberLabel);
+        leftPanel.add(myHumanSlider);
+        
+        add(leftPanel);
+    }
+    
+    /**
+     * The center panel of the north panel is filled with its components and added.
+     * 
+     * @custom.post the center panel is displayed
+     */
+    private void buildCenterPanel() {
+        myBirdLabel = new JLabel("Select number of birds:");
+        myBirdNumberLabel = new JLabel("" + my_slider_min);
+        
+        myBirdSlider = new JSlider(my_slider_min, SimParams.MAX_BIRD_NUM, my_slider_min);
+        myBirdSlider.setMajorTickSpacing(my_major_spacing);
+        myBirdSlider.setMinorTickSpacing(50);
+        myBirdSlider.setPaintTicks(true);
+        myBirdSlider.setPaintLabels(true);
+        myBirdSlider.addChangeListener(mySliderListener);
+        
+        final JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.add(myBirdLabel);
+        centerPanel.add(myBirdNumberLabel);
+        centerPanel.add(myBirdSlider);
+        
+        add(centerPanel);
+    }
+    
+    /**
+     * The right panel of the north panel is filled with its components and added.
+     * 
+     * @custom.post the right panel is displayed
+     */
+    private void buildRightPanel() {
+        myInfectedBirdLabel = new JLabel("Infected birds:");
+        myInfectedBirdNumberLabel = new JLabel("" + my_slider_min + my_percent);
+        
+        myInfectedBirdSlider = new JSlider(my_slider_min, my_major_spacing, my_slider_min);
+        myInfectedBirdSlider.setMajorTickSpacing(20);
+        myInfectedBirdSlider.setMinorTickSpacing(5);
+        myInfectedBirdSlider.setPaintTicks(true);
+        myInfectedBirdSlider.setPaintLabels(true);
+        myInfectedBirdSlider.addChangeListener(mySliderListener);
+        
+        myGenerateButton = new JButton("Generate World");
+        myGenerateButton.addActionListener(new ActionListener()
+        {
+            /**
+             * The simulation world is generated with the proper population.             * 
+             * @param anEvent the source of the event
+             * @custom.post the sim world is generated
+             */
+            @Override
+            public void actionPerformed(ActionEvent anEvent) {
+                new SimWorld(myHumanSlider.getValue(), myBirdSlider.getValue(),
+                                        (double) myInfectedBirdSlider.getValue()
+                                        / my_major_spacing, myWorldPanel,
+                                        myEastPanel, mySouthPanel, myTimer);
+                myHumanSlider.setValue(my_slider_min);
+                myHumanNumberLabel.setText("" + my_slider_min);
+                myBirdSlider.setValue(my_slider_min);
+                myBirdNumberLabel.setText("" + my_slider_min);
+                myInfectedBirdSlider.setValue(my_slider_min);
+                myInfectedBirdNumberLabel.setText("" + my_slider_min + my_percent);
+            }       
+        });
+        
+        final JPanel infectedPanel = new JPanel();
+        infectedPanel.setLayout(new BoxLayout(infectedPanel, BoxLayout.Y_AXIS));
+        infectedPanel.add(myInfectedBirdLabel);
+        infectedPanel.add(myInfectedBirdNumberLabel);
+        infectedPanel.add(myInfectedBirdSlider);
+
+        final JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.X_AXIS));
+        rightPanel.add(infectedPanel);
+        rightPanel.add(myGenerateButton);
+        
+        add(rightPanel);
+    }
+    
+    /**
+     * Listener for each JSlider that dynamically changes the labels associated with them.
+     * 
+     * @custom.post labels are dynamically changed based on slider selections
+     */
+    private class SliderListener implements ChangeListener {
+        /**
+         * The labels associated with each slider are changed dynamically.
+         * 
+         * @param anEvent the source of the event
+         * @custom.post the labels are set accordingly
+         */
+        @Override
+        public void stateChanged(ChangeEvent anEvent) {
+            final JSlider source = (JSlider) anEvent.getSource();
+            
+            if (source == myHumanSlider && source.getValueIsAdjusting()) {
+                myHumanNumberLabel.setText("" + myHumanSlider.getValue());
+            } else if (source == myBirdSlider && source.getValueIsAdjusting()) {
+                myBirdNumberLabel.setText("" + myBirdSlider.getValue());
+            } else if (source == myInfectedBirdSlider && source.getValueIsAdjusting()) {
+                myInfectedBirdNumberLabel.setText("" + myInfectedBirdSlider.getValue()
+                                                  + my_percent);
+            }
+        }
+    }
+}

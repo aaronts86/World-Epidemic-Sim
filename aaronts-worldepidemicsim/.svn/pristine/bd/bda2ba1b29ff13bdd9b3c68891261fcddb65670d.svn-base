@@ -1,0 +1,171 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.SimParams;
+import epidemic.progpracticum.model.SimWorld;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class NorthPanel extends JPanel {
+    private final int my_width = 1150;
+    private final int my_height = 80;
+    private final int my_major_spacing = 100;
+    private final int my_slider_min = 0;
+    private final String my_percent = "%";
+    
+    private JLabel myHumanLabel;
+    private JLabel myHumanNumberLabel;
+    private JLabel myBirdLabel;
+    private JLabel myBirdNumberLabel;
+    private JLabel myInfectedBirdLabel;
+    private JLabel myInfectedBirdNumberLabel;
+    
+    private JSlider myHumanSlider;
+    private JSlider myBirdSlider;
+    private JSlider myInfectedBirdSlider;
+    
+    private JButton myGenerateButton;
+    
+    private SliderListener mySliderListener;
+    
+    private WorldPanel myWorldPanel;
+    private SouthPanel mySouthPanel;
+    private EastPanel myEastPanel;
+    private SimWorld myWorld;
+    private Timer myTimer;
+    
+    public NorthPanel(final WorldPanel aWorldPanel, final SouthPanel aSouthPanel,
+                      final EastPanel anEastPanel, final Timer aTimer) {
+        setPreferredSize(new Dimension(my_width, my_height));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        
+        myWorldPanel = aWorldPanel;
+        mySouthPanel = aSouthPanel;
+        myEastPanel = anEastPanel;
+        myTimer = aTimer;
+        mySliderListener = new SliderListener();
+
+        buildLeftPanel();
+        buildCenterPanel();
+        buildRightPanel();
+    }
+    
+    private void buildLeftPanel() {
+        myHumanLabel = new JLabel("Select number of people:");
+        myHumanNumberLabel = new JLabel("" + my_slider_min);
+        
+        myHumanSlider = new JSlider(my_slider_min, SimParams.MAX_HUMAN_NUM, my_slider_min);
+        myHumanSlider.setMajorTickSpacing(my_major_spacing);
+        myHumanSlider.setMinorTickSpacing(50);
+        myHumanSlider.setPaintTicks(true);
+        myHumanSlider.setPaintLabels(true);
+        myHumanSlider.addChangeListener(mySliderListener);
+        
+        final JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.add(myHumanLabel);
+        leftPanel.add(myHumanNumberLabel);
+        leftPanel.add(myHumanSlider);
+        
+        add(leftPanel);
+    }
+    
+    private void buildCenterPanel() {
+        myBirdLabel = new JLabel("Select number of birds:");
+        myBirdNumberLabel = new JLabel("" + my_slider_min);
+        
+        myBirdSlider = new JSlider(my_slider_min, SimParams.MAX_BIRD_NUM, my_slider_min);
+        myBirdSlider.setMajorTickSpacing(my_major_spacing);
+        myBirdSlider.setMinorTickSpacing(50);
+        myBirdSlider.setPaintTicks(true);
+        myBirdSlider.setPaintLabels(true);
+        myBirdSlider.addChangeListener(mySliderListener);
+        
+        final JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.add(myBirdLabel);
+        centerPanel.add(myBirdNumberLabel);
+        centerPanel.add(myBirdSlider);
+        
+        add(centerPanel);
+    }
+    
+    private void buildRightPanel() {
+        myInfectedBirdLabel = new JLabel("Infected birds:");
+        myInfectedBirdNumberLabel = new JLabel("" + my_slider_min + my_percent);
+        
+        myInfectedBirdSlider = new JSlider(my_slider_min, my_major_spacing, my_slider_min);
+        myInfectedBirdSlider.setMajorTickSpacing(20);
+        myInfectedBirdSlider.setMinorTickSpacing(5);
+        myInfectedBirdSlider.setPaintTicks(true);
+        myInfectedBirdSlider.setPaintLabels(true);
+        myInfectedBirdSlider.addChangeListener(mySliderListener);
+        
+        myGenerateButton = new JButton("Generate World");
+        myGenerateButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent anEvent) {
+                myWorld = new SimWorld(myHumanSlider.getValue(),
+                                        myBirdSlider.getValue(),
+                                        (double) myInfectedBirdSlider.getValue()
+                                        / my_major_spacing, myWorldPanel, mySouthPanel,
+                                        myEastPanel, myTimer);
+            }
+        });
+        
+        final JPanel infectedPanel = new JPanel();
+        infectedPanel.setLayout(new BoxLayout(infectedPanel, BoxLayout.Y_AXIS));
+        infectedPanel.add(myInfectedBirdLabel);
+        infectedPanel.add(myInfectedBirdNumberLabel);
+        infectedPanel.add(myInfectedBirdSlider);
+
+        final JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.X_AXIS));
+        rightPanel.add(infectedPanel);
+        rightPanel.add(myGenerateButton);
+        
+        add(rightPanel);
+    }
+
+    public void resetSliders() {
+        myHumanSlider.setValue(my_slider_min);
+        myHumanNumberLabel.setText("" + my_slider_min);
+        
+        myBirdSlider.setValue(my_slider_min);
+        myBirdNumberLabel.setText("" + my_slider_min);
+        
+        myInfectedBirdSlider.setValue(my_slider_min);
+        myInfectedBirdNumberLabel.setText("" + my_slider_min + my_percent);
+    }
+    
+    private class SliderListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent anEvent) {
+            final JSlider source = (JSlider) anEvent.getSource();
+            
+            if (source == myHumanSlider && source.getValueIsAdjusting()) {
+                myHumanNumberLabel.setText("" + myHumanSlider.getValue());
+            } else if (source == myBirdSlider && source.getValueIsAdjusting()) {
+                myBirdNumberLabel.setText("" + myBirdSlider.getValue());
+            } else if (source == myInfectedBirdSlider && source.getValueIsAdjusting()) {
+                myInfectedBirdNumberLabel.setText("" + myInfectedBirdSlider.getValue()
+                                                  + my_percent);
+            }
+        }
+    }
+}

@@ -1,0 +1,86 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.SimParams;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JFrame;
+import javax.swing.Timer;
+
+
+/**
+ * The <code>SimulationFrame</code> class contains all the components that make up the
+ * graphical representation of the Simulation World.
+ * 
+ * @author Aaron Schraufnagel
+ * @version Autumn 2013
+ * 
+ * @see epidemic.progpracticum.model.SimParams
+ * @see java.awt.BorderLayout
+ * @see java.awt.Dimension
+ * @see java.awt.Toolkit
+ * @see javax.swing.JFrame
+ * @see javax.swing.Timer
+ * 
+ * @cust.inv None
+ */
+@SuppressWarnings("serial")
+public class SimulationFrame extends JFrame {
+    /**
+     * Represents the frame's size.
+     */
+    private final Dimension my_frame_size = new Dimension(1155, 665);
+    /**
+     * Represents a world panel containing the graphical representation of SimWorld.
+     */
+    private WorldPanel myWorldPanel;
+    /**
+     * Represents an east panel that holds statistics.
+     */
+    private EastPanel myEastPanel;
+    /**
+     * The North Panel contains sliders to select the population and a button to generate
+     * the world.
+     */
+    private NorthPanel myNorthPanel;
+    /**
+     * Represents the south panel and holds buttons to control the timer.
+     */
+    private SouthPanel mySouthPanel;
+    /**
+     * Timer object that controls the SimWorld's start and stop intervals.
+     */
+    private Timer myTimer;
+    
+    /**
+     * Default constructor for the <code>SimulationFrame</code> class that constructs
+     * the graphical representation of the GUI.
+     * 
+     * @custom.post frame is displayed on the screen with components contained
+     */
+    public SimulationFrame() {
+        setPreferredSize(my_frame_size);
+        setResizable(false);
+        setIconImage(Toolkit.getDefaultToolkit().getImage("bird.jpg"));
+        
+        myTimer = new Timer(SimParams.ANIMATION_STEP_TIME, null);
+        myWorldPanel = new WorldPanel();
+        myEastPanel = new EastPanel(myWorldPanel);
+        mySouthPanel = new SouthPanel(myWorldPanel, myEastPanel, myTimer);
+        myNorthPanel = new NorthPanel(myWorldPanel, myEastPanel, mySouthPanel, myTimer);
+        
+        
+        add(myWorldPanel, BorderLayout.CENTER);
+        add(myEastPanel, BorderLayout.EAST);
+        add(myNorthPanel, BorderLayout.NORTH);
+        add(mySouthPanel, BorderLayout.SOUTH);
+        
+        pack();
+        setLocationRelativeTo(null);
+    }
+}

@@ -1,0 +1,95 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+public class SouthPanel extends JPanel {
+    private final int my_width = 1150;
+    private final int my_height = 45;
+    
+    private JPanel myButtonPanel;
+    
+    private JButton myStartButton;
+    private JButton myStopButton;
+    private JButton myStepButton;
+    private JButton myResetButton;
+    
+    private ButtonListener myButtonListener;
+    private Timer myTimer;
+    
+    private WorldPanel myWorldPanel;
+    private NorthPanel myNorthPanel;
+    private EastPanel myEastPanel;
+    
+    public SouthPanel(final WorldPanel aWorldPanel, final NorthPanel aNorthPanel,
+                      final EastPanel anEastPanel, final Timer aTimer) {
+        setPreferredSize(new Dimension(my_width, my_height));
+        
+        myWorldPanel = aWorldPanel;
+        myNorthPanel = aNorthPanel;
+        myEastPanel = anEastPanel;
+        myTimer = aTimer;
+        
+        myButtonListener = new ButtonListener();
+        
+        myButtonPanel = new JPanel();
+        
+        myStartButton = new JButton("start");
+        myStartButton.addActionListener(myButtonListener);
+        
+        myStopButton = new JButton("stop");
+        myStopButton.addActionListener(myButtonListener);
+        
+        myStepButton = new JButton("step");
+        myStepButton.addActionListener(myButtonListener);
+        
+        myResetButton = new JButton("reset");
+        myResetButton.addActionListener(myButtonListener);
+        
+        myButtonPanel.add(myStartButton);
+        myButtonPanel.add(myStopButton);
+        myButtonPanel.add(myStepButton);
+        myButtonPanel.add(myResetButton);
+        
+        add(myButtonPanel, BorderLayout.CENTER);
+    }
+
+    private class ButtonListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent anEvent) {
+            final Object source = anEvent.getSource();
+            
+            if (source == myStartButton) {
+                myTimer.start();
+            } else if (source == myStopButton) {
+                myTimer.stop();
+            } else if (source == myStepButton) {
+                if (myTimer.isRunning()) {
+                    myTimer.stop();
+                }
+                if (myTimer.getActionListeners().length == 1) {
+                    myTimer.getActionListeners()[0].actionPerformed(new ActionEvent(this,
+                                                                    ActionEvent.
+                                                                    ACTION_PERFORMED, null));
+                }                                
+            } else if (source == myResetButton) {
+                if (myTimer.isRunning()) {
+                    myTimer.stop();
+                }
+                myWorldPanel.resetWorld();
+                myNorthPanel.resetSliders();
+                myEastPanel.updateStatistics();
+            }
+        }   
+    }
+}

@@ -1,0 +1,126 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.AbstractEntity;
+import epidemic.progpracticum.model.Bird;
+import epidemic.progpracticum.model.Human;
+
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+
+public class EastPanel extends JPanel {
+    private final int my_width = 140;
+    private final int my_height = 500;
+    
+    private final Font my_button_font = new Font(Font.SANS_SERIF, Font.BOLD, 16);
+    
+    private JLabel myEnvironmentLabel;
+    private JLabel myHumanLabel;
+    private JLabel myBirdLabel;
+    private JLabel myDaysLabel;
+    
+    private JButton myInfectedHumansButton;
+    private JButton myHealthyHumansButton;
+    private JButton myInfectedBirdsButton;
+    private JButton myHealthyBirdsButton;
+    private JButton myDaysButton;
+    
+    private int myInfectedHumans;
+    private int myHealthyHumans;
+    private int myInfectedBirds;
+    private int myHealthyBirds;
+    private int myDays;
+    
+    private WorldPanel myWorldPanel;
+    
+    public EastPanel(final WorldPanel aWorldPanel) {
+        setPreferredSize(new Dimension(my_width, my_height));
+        setLayout(new GridLayout(4, 1));
+        
+        myWorldPanel = aWorldPanel;
+        
+        myEnvironmentLabel = new JLabel("Environment Counts:");
+        
+        myHumanLabel = new JLabel("Human Counts:");
+        myInfectedHumansButton = new JButton("Infected:" + myInfectedHumans);
+        myInfectedHumansButton.setEnabled(false);
+        myInfectedHumansButton.setFont(my_button_font);
+        myHealthyHumansButton = new JButton("Healthy: " + myHealthyBirds);
+        myHealthyHumansButton.setEnabled(false);
+        myHealthyHumansButton.setFont(my_button_font);
+        
+        final JPanel humanPanel = new JPanel();
+        humanPanel.setLayout(new BoxLayout(humanPanel, BoxLayout.Y_AXIS));
+        humanPanel.add(myHumanLabel);
+        humanPanel.add(myInfectedHumansButton);
+        humanPanel.add(myHealthyHumansButton);
+        
+        myBirdLabel = new JLabel("Bird Counts:");
+        myInfectedBirdsButton = new JButton("Infected:" + myInfectedBirds);
+        myInfectedBirdsButton.setEnabled(false);
+        myInfectedBirdsButton.setFont(my_button_font);
+        myHealthyBirdsButton = new JButton("Healthy: " + myHealthyHumans);
+        myHealthyBirdsButton.setEnabled(false);
+        myHealthyBirdsButton.setFont(my_button_font);
+        
+        final JPanel birdPanel = new JPanel();
+        birdPanel.setLayout(new BoxLayout(birdPanel, BoxLayout.Y_AXIS));
+        birdPanel.add(myBirdLabel);
+        birdPanel.add(myInfectedBirdsButton);
+        birdPanel.add(myHealthyBirdsButton);
+        
+        myDaysLabel = new JLabel("Number of Days:");
+        myDaysButton = new JButton("" + myDays);
+        myDaysButton.setEnabled(false);
+        myDaysButton.setFont(my_button_font);
+        
+        final JPanel daysPanel = new JPanel();
+        daysPanel.setLayout(new BoxLayout(daysPanel, BoxLayout.Y_AXIS));
+        daysPanel.add(myDaysLabel);
+        daysPanel.add(myDaysButton);
+        
+        add(myEnvironmentLabel);
+        add(humanPanel);
+        add(birdPanel);
+        add(daysPanel);
+    }
+    
+    public void updateStatistics() {
+        myInfectedHumans = 0;
+        myHealthyHumans = 0;
+        myInfectedBirds = 0;
+        myHealthyBirds = 0;
+        myDays = 0;
+        
+        for (AbstractEntity entity: myWorldPanel.getMyEntityList()) {
+            if (entity instanceof Human) {
+                if (entity.isSick()) {
+                    myInfectedHumans++;
+                } else if (!entity.isSick()) {
+                    myHealthyHumans++;
+                }
+            } else if (entity instanceof Bird) {
+                if (entity.isSick()) {
+                    myInfectedBirds++;
+                } else if (!entity.isSick()) {
+                    myHealthyBirds++;
+                }
+            }
+        }
+        
+        myInfectedHumansButton.setText("Infected:" + myInfectedHumans);
+        myHealthyHumansButton.setText("Healthy: " + myHealthyHumans);
+        myInfectedBirdsButton.setText("Infected:" + myInfectedBirds);
+        myHealthyBirdsButton.setText("Healthy: " + myHealthyBirds);
+        myDaysButton.setText("Days: " + myWorldPanel.getMyDays());
+    }
+}

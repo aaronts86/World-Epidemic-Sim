@@ -1,0 +1,78 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.model;
+
+import java.awt.Point;
+
+/**
+ * The <code>Human</code> class represents a Human object that is a subclass of the abstract
+ * class <code>AbstractEntity</code>. A human can be healthy of sick.
+ * 
+ * @author Aaron Schraufnagel
+ * @version Autumn 2013
+ * @see java.awt.Point
+ * 
+ * @cust.inv aDayNum >= 0, the number of days the object has been sick
+ *           aLocation 0 <= x < world width, 0 <= y < world height
+ */
+public class Human extends AbstractEntity {
+    public Human(final char aSpecies, final boolean aSick, final int aDayNum,
+                 final Point aLocation) {
+        super(aSpecies, aSick, aDayNum, aLocation);
+    }
+
+    @Override
+    public void move() {
+        final int direction = SimParams.GENERATOR.nextInt(9);
+        final Point newLocation = new Point();
+        
+        if (direction == 0) {           // North
+            newLocation.setLocation(getMyLocation().x, (getMyLocation().y - 1)
+                                    % SimParams.PANEL_PIX_HEIGHT);      
+        } else if (direction == 1) {    // Northeast
+            newLocation.setLocation((getMyLocation().x + SimParams.HUMAN_DIM) 
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    (getMyLocation().y - SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_HEIGHT);
+        } else if (direction == 2) {    // East
+            newLocation.setLocation((getMyLocation().x + SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    getMyLocation().y);
+        } else if (direction == 3) {    // Southeast
+            newLocation.setLocation((getMyLocation().x + SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    (getMyLocation().y + SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_HEIGHT);
+        } else if (direction == 4) {    // South
+            newLocation.setLocation(getMyLocation().x,
+                                    (getMyLocation().y + SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_HEIGHT);
+        } else if (direction == 5) {    // Southwest
+            newLocation.setLocation((getMyLocation().x - SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    (getMyLocation().y + SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_HEIGHT);
+        } else if (direction == 6) {    // West
+            newLocation.setLocation((getMyLocation().x - SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    getMyLocation().y);
+        } else if (direction == 7) {    // Northwest
+            newLocation.setLocation((getMyLocation().x - SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_WIDTH,
+                                    (getMyLocation().y - SimParams.HUMAN_DIM)
+                                    % SimParams.PANEL_PIX_HEIGHT);
+        } else if (direction == 8) {    // Same
+            newLocation.setLocation(getMyLocation());
+        }
+        
+        if (newLocation.x < 0) {
+            newLocation.x += SimParams.PANEL_PIX_WIDTH;
+        }
+        if (newLocation.y < 0) {
+            newLocation.y += SimParams.PANEL_PIX_HEIGHT;
+        }
+        
+        setMyLocation(newLocation);
+    }
+}

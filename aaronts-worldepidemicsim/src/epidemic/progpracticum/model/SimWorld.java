@@ -1,0 +1,254 @@
+/**
+ * Aaron Schraufnagel.
+ */
+package epidemic.progpracticum.model;
+
+import epidemic.progpracticum.view.EastPanel;
+import epidemic.progpracticum.view.SouthPanel;
+import epidemic.progpracticum.view.WorldPanel;
+
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.Timer;
+
+/**
+ * The <code>SimWorld</code> class represents the simulation world that contains all
+ * AbstractEntity objects and their locations.
+ * 
+ * @author Aaron Schraufnagel
+ * 
+ * @see epidemic.progpracticum.view.EastPanel
+ * @see epidemic.progpracticum.view.SouthPanel
+ * @see epidemic.progpracticum.view.WorldPanel
+ * @see java.awt.Point
+ * @see java.awt.event.ActionEvent
+ * @see java.awt.event.ActionListener
+ * @see java.util.ArrayList
+ * @see java.util.List
+ * @see javax.swing.JOptionPane
+ * @see javax.swing.Timer
+ * 
+ * @cust.inv myHealthyHumans >= 0, the number of healthy humans
+ *           myInfectedHumans >= 0, the number of infected humans
+ *           myHealthyBirds >= 0, the number of healthy birds
+ *           myInfectedBirds >= 0, the number of infected birds
+ */
+public class SimWorld {
+    /**
+     * Value that is added to place entities in a grid placement.
+     */
+    private final int my_grid_value = 5;
+    /**
+     * The number of healthy humans.
+     */
+    private int myHealthyHumans;
+    /**
+     * The number of healthy birds.
+     */
+    private int myHealthyBirds;
+    /**
+     * The number of infected birds..
+     */
+    private int myInfectedBirds;
+    /**
+     * List containing collection of AbstractEntity objects.
+     */
+    private List<AbstractEntity> myEntityList;
+    /**
+     * Timer object that controls the SimWorld's start and stop intervals.
+     */
+    private Timer myTimer;
+    /**
+     * Represents a world panel containing the graphical representation of SimWorld.
+     */
+    private WorldPanel myWorldPanel;
+    /**
+     * Represents an east panel that holds statistics.
+     */
+    private EastPanel myEastPanel;
+    /**
+     * Represents a south panel thatconstructs the buttons and displays the components.
+     */
+    private SouthPanel mySouthPanel;
+    
+    /**
+     * Parameterized constructor for the <code>SimWorld</code> class that takes initial
+     * values to initialize the world.
+     * 
+     * @param aHumans  >= 0, the number of humans
+     * @param aBirds  >= 0, the number of birds
+     * @param anInitialInfectedBirds  >= 0, the percentage of infected birds
+     * @param aWorldPanel represents the graphical representation of the world
+     * @param anEastPanel represents the frame's east panel
+     * @param aSouthPanel constructs the buttons and displays the components
+     * @param aTimer represents the simulation world's timer object
+     * 
+     * @custom.post the simulation world is initialized
+     */
+    public SimWorld(final int aHumans, final int aBirds,
+                    final double anInitialInfectedBirds, final WorldPanel aWorldPanel,
+                    final EastPanel anEastPanel, final SouthPanel aSouthPanel,
+                    final Timer aTimer) {
+        myHealthyHumans = aHumans;
+        myInfectedBirds = (int) Math.round(anInitialInfectedBirds * aBirds);
+        myHealthyBirds = aBirds - myInfectedBirds;
+        myWorldPanel = aWorldPanel;
+        myEastPanel = anEastPanel;
+        mySouthPanel = aSouthPanel;
+        myTimer = aTimer;
+        
+        myEntityList = new ArrayList<>();
+        initializeWorld();
+    }
+    
+    /**
+     * The list of AbstractEntity's are filled with the appropriate contents based on the
+     * user's selections. The world panel is filled with the population.
+     * 
+     * @custom.post the world is initialized
+     */
+    public void initializeWorld() {
+        myWorldPanel.resetWorld();
+        Point startPoint;
+        boolean newPoint;
+        
+        for (int i = 0; i < myTimer.getActionListeners().length; i++) {
+            myTimer.removeActionListener(myTimer.getActionListeners()[i]);
+        }
+        myTimer.addActionListener(new EntityMoveListener());
+        
+        if (myTimer.isRunning()) {
+            myTimer.stop();
+        }
+        
+        mySouthPanel.setMyOriginalHumans(myHealthyHumans);
+        mySouthPanel.setMyOriginalHealthyBirds(myHealthyBirds);
+        mySouthPanel.setMyOriginalInfectedBirds(myInfectedBirds);
+        
+        for (int i = 0; i < myHealthyHumans; i++) {
+            do {       
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Human('H', false, 0, startPoint));
+        }
+        
+        for (int i = 0; i < myHealthyBirds; i++) {
+            do {                
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Bird('B', false, 0, startPoint));
+        }
+        
+        for (int i = 0; i < myInfectedBirds; i++) {
+            do {                
+                startPoint = new Point(((
+                        (SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_WIDTH)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM)
+                        % SimParams.PANEL_PIX_WIDTH,
+                        ((SimParams.GENERATOR.nextInt(SimParams.PANEL_PIX_HEIGHT)
+                        + my_grid_value) / SimParams.HUMAN_DIM) * SimParams.HUMAN_DIM
+                        % SimParams.PANEL_PIX_HEIGHT);
+                newPoint = true;
+                
+                for (AbstractEntity entity: myEntityList) {
+                    if (startPoint.equals(entity.getMyLocation())) {
+                        newPoint = false;
+                        break;
+                    }
+                }
+            } while (!newPoint);
+            
+            myEntityList.add(new Bird('B', true, 1, startPoint));
+        }
+        myWorldPanel.setMyEntityList(myEntityList);
+        myWorldPanel.repaint();
+        myEastPanel.updateStatistics();
+    }
+    
+    
+    
+    /**
+     * All entities of the population move appropriately. Based on infection rates,
+     * the infected population is updated.
+     * 
+     * @custom.post all entities of the populations move appropriately and infection
+     *              rates are recalculated
+     */
+    private class EntityMoveListener implements ActionListener {
+        /**
+         * All entities are moved appropriately and infection rates are updated.
+         * 
+         * @param anEvent the source firing the event
+         */
+        @Override
+        public void actionPerformed(ActionEvent anEvent) {
+            boolean allInfected = true;
+            final List<AbstractEntity> updatedEntityList = new ArrayList<>();
+            myWorldPanel.advanceDay();
+            for (AbstractEntity entity: myEntityList) {
+                entity.move();
+                if (!entity.isSick()) {
+                    allInfected = false;
+                }
+                if (entity.isSick()) {
+                    entity.setMyDaysSick(entity.getMyDaysSick() + 1);
+                    for (AbstractEntity otherEntity: myEntityList) {
+                        if (entity.equals(otherEntity) && entity.compareTo(otherEntity) < 0) {
+                            final double infected = SimParams.GENERATOR.nextDouble();
+                            if (infected >= SimParams.CHANCE_OF_INFECTION) {
+                                otherEntity.setMyIsSick(true);
+                            }
+                        }
+                    }
+                }
+                updatedEntityList.add(entity);
+            }
+            
+            if (allInfected) {
+                myTimer.stop();
+                mySouthPanel.saveDataDialog();
+                myTimer.removeActionListener(this);
+            }
+            
+            myEntityList.clear();
+            myEntityList.addAll(updatedEntityList);
+            myWorldPanel.setMyEntityList(myEntityList);
+            myWorldPanel.repaint();
+            myEastPanel.updateStatistics();
+        }
+    }
+}

@@ -1,0 +1,329 @@
+/**
+ * Aaron Schraufnagel.
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.SimParams;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+/**
+ * The <code>SouthPanel</code> class is apart of the SimulationFrame and holds buttons
+ * to control the timer.
+ * 
+ * @author Aaron Schraufnagel
+ * 
+ * @see java.awt.BorderLayout
+ * @see java.awt.Dimension
+ * @see java.awt.ActionEvent
+ * @see java.awt.ActionListener
+ * @see javax.swing.JButton
+ * @see javax.swing.Timer
+ * 
+ * @cust.inv None
+ */
+@SuppressWarnings("serial")
+public class SouthPanel extends JPanel {
+    /**
+     * Represents the panel's width.
+     */
+    private final int my_width = 1150;
+    /**
+     * Represents the panel's height.
+     */
+    private final int my_height = 45;
+    /**
+     * Represents a comma used to split the file contents.
+     */
+    private final String my_split = ",";
+    /**
+     * Represents the panel containing the buttons.
+     */
+    private JPanel myButtonPanel;
+    /**
+     * Represents the button that starts the timer.
+     */
+    private JButton myStartButton;
+    /**
+     * Represents the button that stops the timer.
+     */
+    private JButton myStopButton;
+    /**
+     * Represents the button that moves the entities by one time slice.
+     */
+    private JButton myStepButton;
+    /**
+     * Represents the button that resets the frame.
+     */
+    private JButton myResetButton;
+    /**
+     * Represents the listener for all buttons.
+     */
+    private ButtonListener myButtonListener;
+    /**
+     * Timer object that controls the SimWorld's start and stop intervals.
+     */
+    private Timer myTimer;
+    /**
+     * Represents a filechooser object for saving sim results to file.
+     */
+    private JFileChooser myFileChooser;
+    /**
+     * Represents the number of original humans generated.
+     */
+    private int myOriginalHumans;
+    /**
+     * Represents the number of original healthy birds generated.
+     */
+    private int myOriginalHealthyBirds;
+    /**
+     * Represents the number of original infected birds generated.
+     */
+    private int myOriginalInfectedBirds;
+    /**
+     * Represents a world panel containing the graphical representation of SimWorld.
+     */
+    private WorldPanel myWorldPanel;
+    /**
+     * Represents an east panel that holds statistics.
+     */
+    private EastPanel myEastPanel;
+    
+    /**
+     * Parameterized constructor for the <code>SouthPanel</code> that constructs the buttons
+     * and displays the components.
+     * 
+     * @param aWorldPanel represents a world panel containing the graphical representation of
+     *                    SimWorld
+     * @param anEastPanel panel that holds statistics
+     * @param aTimer controls the SimWorld's start and stop intervals
+     * 
+     * @custom.post the southpanel is constructed
+     */
+    public SouthPanel(final WorldPanel aWorldPanel, final EastPanel anEastPanel,
+                      final Timer aTimer) {
+        super();
+        setPreferredSize(new Dimension(my_width, my_height));
+        
+        myWorldPanel = aWorldPanel;
+        myEastPanel = anEastPanel;
+        myTimer = aTimer;
+        
+        setupButtons();
+    }
+    
+    /**
+     * Sets up the button components.
+     * 
+     * @custom.post buttons are instantiated and displayed to the user
+     */
+    public void setupButtons() {
+        myButtonListener = new ButtonListener();
+        
+        myButtonPanel = new JPanel();
+        
+        myStartButton = new JButton("start");
+        myStartButton.addActionListener(myButtonListener);
+        
+        myStopButton = new JButton("stop");
+        myStopButton.addActionListener(myButtonListener);
+        
+        myStepButton = new JButton("step");
+        myStepButton.addActionListener(myButtonListener);
+        
+        myResetButton = new JButton("reset");
+        myResetButton.addActionListener(myButtonListener);
+        
+        myButtonPanel.add(myStartButton);
+        myButtonPanel.add(myStopButton);
+        myButtonPanel.add(myStepButton);
+        myButtonPanel.add(myResetButton);
+        
+        add(myButtonPanel, BorderLayout.CENTER);
+    }
+    
+    /**
+     * Opens a save dialog box and saves the data from the simulation to a .csv file.
+     * 
+     * @custom.post the data is saved to an output .csv file
+     */
+    public void saveDataDialog() {
+        final int response = JOptionPane.showConfirmDialog(null,
+            "Would you like to save the simulation data?", "Save simulation data?",
+            JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.YES_OPTION) {
+            if (myFileChooser == null) {
+                myFileChooser = new JFileChooser();
+            }
+            
+            myFileChooser.resetChoosableFileFilters();
+            
+            int select = -1;
+            
+            myFileChooser.setFileFilter(new FileNameExtensionFilter
+            ("CSV format (*.csv)", "csv"));
+            select = myFileChooser.showSaveDialog(null);
+            
+            File result;
+            
+            if (select == JFileChooser.APPROVE_OPTION) {
+                result = myFileChooser.getSelectedFile();
+                if (result == null) {
+                    return;
+                }
+                final String extension =
+                        myFileChooser.getFileFilter().getDescription().substring(0, 3);
+                try {
+                    final String file = result.getPath() + "." + extension;
+                    final FileWriter stream = new FileWriter(file, true);
+                    final BufferedWriter writer = new BufferedWriter(stream);
+                    final FileReader fStream = new FileReader(file);
+                    final BufferedReader reader = new BufferedReader(fStream);
+                    
+                    if (reader.readLine() == null) {
+                        writer.write("Sim Results");
+                        writer.write("\nHumans(Original #),Healthy Birds(Original #),"
+                            + "Infected Birds(Original #),Healthy Humans(Current #),"
+                            + "Infected Humans(Current #),Healthy Birds(Current #),"
+                            + "Infected Birds(Current #),Days Passed,Chance of "
+                            + "Infection");
+                    }
+                    writer.append("\n" + myOriginalHumans + my_split + myOriginalHealthyBirds
+                                  + my_split + myOriginalInfectedBirds + my_split
+                                  + myEastPanel.getMyHealthyHumans() + my_split
+                                  + myEastPanel.getMyInfectedHumans() + my_split
+                                  + myEastPanel.getMyHealthyBirds() + my_split
+                                  + myEastPanel.getMyInfectedBirds() + my_split
+                                  + myWorldPanel.getMyDays() + my_split
+                                  + SimParams.CHANCE_OF_INFECTION);
+                    writer.close();
+                    reader.close();
+                } catch (final FileNotFoundException e) {
+                    System.out.println("Cannot output to file");
+                } catch (final IOException e) {
+                    System.out.println("Unable to open file");
+                }    
+            }
+        }
+    }
+    
+    /**
+     * Returns the number of original humans.
+     * 
+     * @return myOriginalHumans the number of original humans
+     * @custom.post the number of original humans is returned
+     */
+    public int getMyOriginalHumans() {
+        return myOriginalHumans;
+    }
+
+    /**
+     * The number of original humans is set to a new value.
+     * 
+     * @param anOriginalHumans number of original humans to set
+     * @custom.post myOriginalHumans is set to a new value
+     */
+    public void setMyOriginalHumans(int anOriginalHumans) {
+        this.myOriginalHumans = anOriginalHumans;
+    }
+
+    /**
+     * Returns the number of original healthy birds.
+     * 
+     * @return myOriginalHealthyBirds the number of original healthy birds
+     * @custom.post the number of original healthy birds is returned
+     */
+    public int getMyOriginalHealthyBirds() {
+        return myOriginalHealthyBirds;
+    }
+
+    /**
+     * The number of original healthy birds is set to a new value.
+     * 
+     * @param anOriginalHealthyBirds number of original healthy birds to set
+     * @custom.post myOriginalHealthyBirds is set to a new value
+     */
+    public void setMyOriginalHealthyBirds(int anOriginalHealthyBirds) {
+        this.myOriginalHealthyBirds = anOriginalHealthyBirds;
+    }
+
+    /**
+     * Returns the number of original infected birds.
+     * 
+     * @return myOriginalInfectedBirds the number of original infected birds
+     * @custom.post the number of original infected birds is returned
+     */
+    public int getMyOriginalInfectedBirds() {
+        return myOriginalInfectedBirds;
+    }
+    
+    /**
+     * The number of original infected birds is set to a new value.
+     * 
+     * @param anOriginalInfectedBirds number of original infected birds to set
+     * @custom.post myOriginalInfectedBirds is set to a new value
+     */
+    public void setMyOriginalInfectedBirds(int anOriginalInfectedBirds) {
+        this.myOriginalInfectedBirds = anOriginalInfectedBirds;
+    }
+
+    /**
+     * Assigns actions to each button in the panel.
+     * 
+     * @custom.post each button is assigned an action
+     */
+    private class ButtonListener implements ActionListener {
+        /**
+         * Represents the actions to be fired for each button.
+         * 
+         * @param anEvent the source of the action
+         * @custom.post each button is given an action
+         */
+        @Override
+        public void actionPerformed(ActionEvent anEvent) {
+            final Object source = anEvent.getSource();
+            
+            if (source == myStartButton) {
+                if (myWorldPanel.getMyEntityList().size() > 0) {
+                    myTimer.start();
+                }
+            } else if (source == myStopButton) {
+                myTimer.stop();
+                saveDataDialog();
+            } else if (source == myStepButton) {
+                if (myTimer.isRunning()) {
+                    myTimer.stop();
+                }
+                if (myTimer.getActionListeners().length == 1
+                    && myWorldPanel.getMyEntityList().size() > 0) {
+                    myTimer.getActionListeners()[0].actionPerformed(new ActionEvent(this,
+                                                                    ActionEvent.
+                                                                    ACTION_PERFORMED, null));
+                }                                
+            } else if (source == myResetButton) {
+                if (myTimer.isRunning()) {
+                    myTimer.stop();
+                }
+                myWorldPanel.resetWorld();
+                myEastPanel.updateStatistics();
+            }
+        }   
+    }
+}

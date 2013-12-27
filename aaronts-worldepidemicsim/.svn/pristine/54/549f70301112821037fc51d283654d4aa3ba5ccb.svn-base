@@ -1,0 +1,220 @@
+/**
+ * Aaron Schraufnagel. Final project Autumn 2013
+ */
+package epidemic.progpracticum.view;
+
+import epidemic.progpracticum.model.AbstractEntity;
+import epidemic.progpracticum.model.Bird;
+import epidemic.progpracticum.model.Human;
+
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+/**
+ * The <code>EastPanel</code> class is apart of the SimulationFrame and contains the dynamic
+ * statistics of the simulation world.
+ * 
+ * @author Aaron Schraufnagel
+ * @version Autumn 2013
+ * 
+ * @see epidemic.progpracticum.model.AbstractEntity
+ * @see epidemic.progpracticum.model.Bird
+ * @see epidemic.progpracticum.model.Human
+ * @see java.awt.Dimension
+ * @see java.awt.Font
+ * @see java.awt.GridLayout
+ * @see javax.swing.BoxLayout
+ * @see javax.swing.JButton
+ * @see javax.swing.JLabel
+ * @see javax.swing.JPanel
+ * 
+ * @cust.inv myHealthyHumans >= 0, the number of healthy humans
+ *           myInfectedHumans >= 0, the number of infected humans
+ *           myHealthyBirds >= 0, the number of healthy birds
+ *           myInfectedBirds >= 0, the number of infected birds
+ */
+@SuppressWarnings("serial")
+public class EastPanel extends JPanel {
+    /**
+     * Represents the panel's width.
+     */
+    private final int my_width = 140;
+    /**
+     * Represents the panel's height.
+     */
+    private final int my_height = 500;
+    /**
+     * Represents the default font for the button labels.
+     */
+    private final Font my_button_font = new Font(Font.SANS_SERIF, Font.BOLD, 16);
+    /**
+     * Represents the environment label header.
+     */
+    private JLabel myEnvironmentLabel;
+    /**
+     * Represents the label header that displays Humans.
+     */
+    private JLabel myHumanLabel;
+    /**
+     * Represents the label header that displays Birds.
+     */
+    private JLabel myBirdLabel;
+    /**
+     * Represents the label header that displays Days.
+     */
+    private JLabel myDaysLabel;
+    /**
+     * Represents the statistical display button for infected humans.
+     */
+    private JButton myInfectedHumansButton;
+    /**
+     * Represents the statistical display button for healthy humans.
+     */
+    private JButton myHealthyHumansButton;
+    /**
+     * Represents the statistical display button for infected birds.
+     */
+    private JButton myInfectedBirdsButton;
+    /**
+     * Represents the statistical display button for healthy birds.
+     */
+    private JButton myHealthyBirdsButton;
+    /**
+     * Represents the statistical display button for number of days passed.
+     */
+    private JButton myDaysButton;
+    /**
+     * Represents the number of infected humans.
+     */
+    private int myInfectedHumans;
+    /**
+     * Represents the number of healthy humans.
+     */
+    private int myHealthyHumans;
+    /**
+     * Represents the number of infected birds.
+     */
+    private int myInfectedBirds;
+    /**
+     * Represents the number of healthy birds.
+     */
+    private int myHealthyBirds;
+    /**
+     * Represents the number of days passed.
+     */
+    private int myDays;
+    /**
+     * Represents a world panel containing the graphical representation of SimWorld.
+     */
+    private WorldPanel myWorldPanel;
+    
+    /**
+     * The parameterized constructor for the East Panel that displays its components
+     * in the simulation frame.
+     * 
+     * @param aWorldPanel represents a world panel containing the graphical representation
+     * of SimWorld
+     * @custom.post the EastPanel is contrusted and displayed
+     */
+    public EastPanel(final WorldPanel aWorldPanel) {
+        super();
+        setPreferredSize(new Dimension(my_width, my_height));
+        setLayout(new GridLayout(4, 1));
+        
+        myWorldPanel = aWorldPanel;
+        setup();
+    }
+    
+    /**
+     * Setups the all the components and displays them on the panel.
+     * 
+     * @custom.post eastpanel is setup
+     */
+    public void setup() {
+        myEnvironmentLabel = new JLabel("Environment Counts:");
+        
+        myHumanLabel = new JLabel("Human Counts:");
+        myInfectedHumansButton = new JButton("Infected:" + myInfectedHumans);
+        myInfectedHumansButton.setEnabled(false);
+        myInfectedHumansButton.setFont(my_button_font);
+        myHealthyHumansButton = new JButton("Healthy: " + myHealthyBirds);
+        myHealthyHumansButton.setEnabled(false);
+        myHealthyHumansButton.setFont(my_button_font);
+        
+        final JPanel humanPanel = new JPanel();
+        humanPanel.setLayout(new BoxLayout(humanPanel, BoxLayout.Y_AXIS));
+        humanPanel.add(myHumanLabel);
+        humanPanel.add(myInfectedHumansButton);
+        humanPanel.add(myHealthyHumansButton);
+        
+        myBirdLabel = new JLabel("Bird Counts:");
+        myInfectedBirdsButton = new JButton("Infected:" + myInfectedBirds);
+        myInfectedBirdsButton.setEnabled(false);
+        myInfectedBirdsButton.setFont(my_button_font);
+        myHealthyBirdsButton = new JButton("Healthy: " + myHealthyHumans);
+        myHealthyBirdsButton.setEnabled(false);
+        myHealthyBirdsButton.setFont(my_button_font);
+        
+        final JPanel birdPanel = new JPanel();
+        birdPanel.setLayout(new BoxLayout(birdPanel, BoxLayout.Y_AXIS));
+        birdPanel.add(myBirdLabel);
+        birdPanel.add(myInfectedBirdsButton);
+        birdPanel.add(myHealthyBirdsButton);
+        
+        myDaysLabel = new JLabel("Number of Days:");
+        myDaysButton = new JButton("" + myDays);
+        myDaysButton.setEnabled(false);
+        myDaysButton.setFont(my_button_font);
+        
+        final JPanel daysPanel = new JPanel();
+        daysPanel.setLayout(new BoxLayout(daysPanel, BoxLayout.Y_AXIS));
+        daysPanel.add(myDaysLabel);
+        daysPanel.add(myDaysButton);
+        
+        add(myEnvironmentLabel);
+        add(humanPanel);
+        add(birdPanel);
+        add(daysPanel);
+    }
+    
+    /**
+     * The statistics displayed in the button labels are updated.
+     * 
+     * @custom.post the button labels are changed accordingly
+     */
+    public void updateStatistics() {
+        myInfectedHumans = 0;
+        myHealthyHumans = 0;
+        myInfectedBirds = 0;
+        myHealthyBirds = 0;
+        myDays = 0;
+        
+        for (AbstractEntity entity: myWorldPanel.getMyEntityList()) {
+            if (entity instanceof Human) {
+                if (entity.isSick()) {
+                    myInfectedHumans++;
+                } else if (!entity.isSick()) {
+                    myHealthyHumans++;
+                }
+            } else if (entity instanceof Bird) {
+                if (entity.isSick()) {
+                    myInfectedBirds++;
+                } else if (!entity.isSick()) {
+                    myHealthyBirds++;
+                }
+            }
+        }
+        
+        myInfectedHumansButton.setText("Infected:" + myInfectedHumans);
+        myHealthyHumansButton.setText("Healthy: " + myHealthyHumans);
+        myInfectedBirdsButton.setText("Infected:" + myInfectedBirds);
+        myHealthyBirdsButton.setText("Healthy: " + myHealthyBirds);
+        myDaysButton.setText("Days: " + myWorldPanel.getMyDays());
+    }
+}
