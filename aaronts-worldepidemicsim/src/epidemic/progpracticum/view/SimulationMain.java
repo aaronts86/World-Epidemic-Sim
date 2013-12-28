@@ -29,7 +29,7 @@ public final class SimulationMain {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 final SimulationFrame frame = new SimulationFrame();
-                frame.setTitle("CSS305 Epidemic Simulation");
+                frame.setTitle("Epidemic Simulation");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setVisible(true);
             }
